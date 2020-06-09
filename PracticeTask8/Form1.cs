@@ -73,39 +73,51 @@ namespace PracticeTask8
         }
         void Calculate_Components()
         {
-            string[] node_sets = new string[size];
+            List<List<int>> node_sets = new List<List<int>>(size);
             int count_of_components = 0;
             for(int i = 0; i < size; i++)
             {
-                node_sets[i] = "";
+                node_sets.Add(new List<int>());
                 for(int j = 0; j < size; j++)
                 {
                     if (matrix[i, j] == 1)
                     {
-                        node_sets[i] += j.ToString();
+                        node_sets[i].Add(j);
                     }
                 }
             }
-            if (node_sets.All(str => str == "")) count_of_components = size;
+            if (node_sets.All(str => str.Count == 0)) count_of_components = size;
             else
             {
-                for (int i = 0; i < size; i++)
+                bool one_component = false;
+                string[] components_lines = new string[size];
+                for (int i = 0; i < size && !one_component; i++)
                 {
                     bool[] checked_nodes = new bool[size];
                     for (int j = 0; j < size; j++)
                     {
-                        if (i != j && node_sets[i].Contains(j.ToString()))
+                        if (i != j && node_sets[i].Contains(j))
                         {
-                            node_sets[i] += node_sets[j];
+                            node_sets[i].AddRange(node_sets[j]);
                             checked_nodes[j] = true;
                         }
                         else checked_nodes[j] = false;
                     }
-                    node_sets[i] = string.Concat(node_sets[i].Distinct().OrderBy(ch => ch));
-                    if (node_sets[i].Any(ch => (checked_nodes[(ch - '0')] == false && (ch - '0') != i)))
+                    node_sets[i] = node_sets[i].Distinct().OrderBy(elem => elem).ToList();
+                    if (node_sets[i].Count == size)
+                    {
+                        one_component = true;
+                        break;
+                    }
+                    if (node_sets[i].Any(elem => (checked_nodes[elem] == false && elem != i)))
                         --i;
+                    else
+                    {
+                        components_lines[i] = string.Join(" ", node_sets[i]);
+                    }
                 }
-                count_of_components = node_sets.Distinct().Count();
+                if (one_component) count_of_components = 1;
+                else count_of_components = components_lines.Distinct().Count();
             }
             Print_Count(count_of_components); 
         }
